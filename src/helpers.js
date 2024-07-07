@@ -1,6 +1,6 @@
 const { userStatusList } = require("./consts");
 
-const setStatus = (userId, status) => {
+function setStatus(userId, status) {
     const statusIndex = userStatusList.findIndex(el => el.id === userId);
 
     if (statusIndex === -1) {
@@ -13,7 +13,11 @@ const setStatus = (userId, status) => {
     }
 }
 
-const setField = (userId, field, value) => {
+const getText = (msg) => {
+    return msg.text || msg.data
+}
+
+function setField(userId, field, value) {
     const index = userStatusList.findIndex(el => el.id === userId);
 
     if (index === -1) {
@@ -37,8 +41,36 @@ const getField = (userId, field) => {
     }
 }
 
+const getChatId = (msg) => msg.chat?.id ?? msg.message.chat.id;
+
+const getCommand = (msg) => {
+    const chatId = getChatId(msg);
+    const userStatus = getField(chatId, "status");
+    if (userStatus === "command" || !userStatus) {
+        return msg.text?.split(' ')[0] || msg.data?.split(' ')[0]
+    }
+    return userStatus;
+};
+
+const getProps = (msg) => {
+    const propList = (msg.text?.split(' ') || msg.data?.split(' '))?.slice(1);
+
+    return propList?.reduce((acc, el) => {
+        const [key, value] = el.split("=");
+        acc[key] = value
+        return acc;
+    }, {})
+}
+
+
+
+
 module.exports = {
     setStatus,
     setField,
-    getField
+    getField,
+    getCommand,
+    getChatId,
+    getProps,
+    getText
 }
